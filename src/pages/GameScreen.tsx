@@ -7,6 +7,8 @@ import { QRCodeSVG } from "qrcode.react";
 const NO_PEOPLE_BANNER_DELAY_MS = 10_000;
 const QR_COVER_SPEED_MS = 900;
 const QR_COVER_RISE_PERCENT = 88;
+const QR_SIZE = 300;
+const QR_COVER_SCALE = 1.45;
 const INTRO_BANNER_IMAGE = "/host-intro-banner-temp.png";
 const QR_BLOCKER_IMAGE = "/qr-cover-temp.png";
 const CLAIM_POPUP_IMAGE_1 = "/winner-popup-1-temp.png";
@@ -97,23 +99,29 @@ export default function GameScreen() {
             />
           </div>
 
-          <div className="h-full flex items-center justify-center">
-            <div className="relative">
+          <div className="h-full flex items-center justify-center overflow-visible">
+            <div className="relative overflow-visible">
               <QRCodeSVG
                 value={scanUrl}
-                size={300}
+                size={QR_SIZE}
                 bgColor="transparent"
                 fgColor="hsl(175, 85%, 55%)"
                 level="H"
               />
               <div
-                className="absolute inset-0 pointer-events-none bg-center bg-cover bg-no-repeat"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 pointer-events-none"
                 style={{
-                  backgroundImage: `url('${QR_BLOCKER_IMAGE}')`,
-                  transform: `translateY(${coverTranslateY}%)`,
+                  width: `${QR_SIZE * QR_COVER_SCALE}px`,
+                  transform: `translate(-50%, calc(-50% + ${coverTranslateY}%))`,
                   transition: `transform ${QR_COVER_SPEED_MS}ms ease-in-out`,
                 }}
-              />
+              >
+                <img
+                  src={QR_BLOCKER_IMAGE}
+                  alt="QR cover"
+                  className="w-full h-auto object-contain"
+                />
+              </div>
             </div>
           </div>
         </section>
