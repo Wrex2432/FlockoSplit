@@ -13,6 +13,18 @@ interface CameraCounterProps {
 
 const TARGET_NUMBER_BACKGROUND_IMAGE = "/target-number-bg-temp.png";
 
+// Target badge controls
+const TARGET_BADGE_WIDTH = "min(42vw, 420px)";
+const TARGET_BADGE_HEIGHT = "min(18vh, 140px)";
+const TARGET_BADGE_X = "50%";
+const TARGET_BADGE_Y = "4%";
+
+// Camera window controls
+const CAMERA_WINDOW_WIDTH = "90%";
+const CAMERA_WINDOW_HEIGHT = "86%";
+const CAMERA_WINDOW_X = "50%";
+const CAMERA_WINDOW_Y = "56%";
+
 export function CameraCounter({ targetNumber, onTargetReached, onTargetLost, cameraCountdown, onCountChange }: CameraCounterProps) {
   const { videoRef, canvasRef, count, isLoading, error } = usePersonDetection();
   const prevAboveTarget = useRef(false);
@@ -32,17 +44,33 @@ export function CameraCounter({ targetNumber, onTargetReached, onTargetLost, cam
   }, [count, onCountChange]);
 
   return (
-    <div className="h-full w-full relative">
+    <div className="h-full w-full relative overflow-visible">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="absolute top-4 left-1/2 -translate-x-1/2 z-30 w-[min(42vw,420px)] h-[min(18vh,140px)] flex items-center justify-center bg-center bg-contain bg-no-repeat pointer-events-none"
-        style={{ backgroundImage: `url('${TARGET_NUMBER_BACKGROUND_IMAGE}')` }}
+        className="absolute z-30 flex items-center justify-center bg-center bg-contain bg-no-repeat pointer-events-none"
+        style={{
+          width: TARGET_BADGE_WIDTH,
+          height: TARGET_BADGE_HEIGHT,
+          left: TARGET_BADGE_X,
+          top: TARGET_BADGE_Y,
+          transform: "translateX(-50%)",
+          backgroundImage: `url('${TARGET_NUMBER_BACKGROUND_IMAGE}')`,
+        }}
       >
         <span className="counter-display text-6xl md:text-7xl text-primary glow-text">{targetNumber}</span>
       </motion.div>
 
-      <div className="relative z-10 w-full h-full min-h-0 rounded-2xl overflow-hidden border-2 border-border glow-box">
+      <div
+        className="absolute z-10 min-h-0 rounded-2xl overflow-hidden border-2 border-border glow-box"
+        style={{
+          width: CAMERA_WINDOW_WIDTH,
+          height: CAMERA_WINDOW_HEIGHT,
+          left: CAMERA_WINDOW_X,
+          top: CAMERA_WINDOW_Y,
+          transform: "translate(-50%, -50%)",
+        }}
+      >
         <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 

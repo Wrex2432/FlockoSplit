@@ -9,11 +9,14 @@ const QR_COVER_SPEED_MS = 900;
 const QR_COVER_RISE_PERCENT = 88;
 const QR_SIZE = 300;
 const QR_COVER_SCALE = 1.45;
-const INTRO_BANNER_IMAGE = "/host-intro-banner-temp.png";
-const QR_BLOCKER_IMAGE = "/qr-cover-temp.png";
-const CLAIM_POPUP_IMAGE_1 = "/winner-popup-1-temp.png";
-const CLAIM_POPUP_IMAGE_2 = "/winner-popup-2-temp.png";
-const LAYER_TWO_BACKGROUND_IMAGE = "/host-layer-2-bg-temp.png";
+const QR_COVER_OFFSET_X_PX = 0;
+const QR_COVER_OFFSET_Y_PX = 0;
+
+const INTRO_BANNER_IMAGE = "/bg_intro.png";
+const QR_BLOCKER_IMAGE = "/HAND.png";
+const CLAIM_POPUP_IMAGE_1 = "/pr1.png";
+const CLAIM_POPUP_IMAGE_2 = "/pr2.png";
+const LAYER_TWO_BACKGROUND_IMAGE = "/bg_cam.png";
 
 export default function GameScreen() {
   const [liveCount, setLiveCount] = useState(0);
@@ -71,14 +74,12 @@ export default function GameScreen() {
     };
   }, [phase, winner, startNewRound]);
 
-
   const proximity = useMemo(() => {
     if (!targetNumber) return 0;
     return Math.max(0, Math.min(liveCount / targetNumber, 1));
   }, [liveCount, targetNumber]);
 
   const coverTranslateY = -(proximity * QR_COVER_RISE_PERCENT);
-
   const scanUrl = `${window.location.origin}/scan`;
 
   return (
@@ -89,6 +90,7 @@ export default function GameScreen() {
             className="absolute inset-0 -z-10 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url('${LAYER_TWO_BACKGROUND_IMAGE}')` }}
           />
+
           <div className="glass-panel p-4 h-full min-h-0">
             <CameraCounter
               targetNumber={targetNumber}
@@ -108,11 +110,12 @@ export default function GameScreen() {
                 fgColor="hsl(175, 85%, 55%)"
                 level="H"
               />
+
               <div
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 pointer-events-none"
+                className="absolute left-1/2 top-1/2 pointer-events-none"
                 style={{
                   width: `${QR_SIZE * QR_COVER_SCALE}px`,
-                  transform: `translate(-50%, calc(-50% + ${coverTranslateY}%))`,
+                  transform: `translate(calc(-50% + ${QR_COVER_OFFSET_X_PX}px), calc(-50% + ${QR_COVER_OFFSET_Y_PX}px + ${coverTranslateY}%))`,
                   transition: `transform ${QR_COVER_SPEED_MS}ms ease-in-out`,
                 }}
               >
