@@ -24,9 +24,11 @@ export function useGameState() {
   const [winner, setWinner] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout>();
 
-  const startNewRound = useCallback(async () => {
-    const newTarget = Math.floor(Math.random() * 7) + 2;
-    setTargetNumber(newTarget);
+  const startNewRound = useCallback(async (reshuffleTarget = true) => {
+    if (reshuffleTarget) {
+      const newTarget = Math.floor(Math.random() * 7) + 2;
+      setTargetNumber(newTarget);
+    }
     setPhase("counting");
     setProcessingTime(10);
     setScans([]);
@@ -54,7 +56,7 @@ export function useGameState() {
       setPhase("results");
     } else {
       await supabase.from("game_rounds").update({ status: "counting" }).eq("id", roundId);
-      await startNewRound();
+      await startNewRound(false);
     }
   }, [startNewRound]);
 
