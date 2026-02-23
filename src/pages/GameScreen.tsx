@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGameState } from "@/hooks/useGameState";
 import { CameraCounter } from "@/components/game/CameraCounter";
 import { QRCodeSVG } from "qrcode.react";
 
 const NO_PEOPLE_BANNER_DELAY_MS = 10_000;
+const QR_COVER_SPEED_MS = 900;
+const QR_COVER_RISE_PERCENT = 88;
 const INTRO_BANNER_IMAGE = "/host-intro-banner-temp.png";
+const QR_BLOCKER_IMAGE = "/qr-cover-temp.png";
 const CLAIM_POPUP_IMAGE_1 = "/winner-popup-1-temp.png";
 const CLAIM_POPUP_IMAGE_2 = "/winner-popup-2-temp.png";
 const LAYER_TWO_BACKGROUND_IMAGE = "/host-layer-2-bg-temp.png";
@@ -66,6 +69,14 @@ export default function GameScreen() {
     };
   }, [phase, winner, startNewRound]);
 
+
+  const proximity = useMemo(() => {
+    if (!targetNumber) return 0;
+    return Math.max(0, Math.min(liveCount / targetNumber, 1));
+  }, [liveCount, targetNumber]);
+
+  const coverTranslateY = -(proximity * QR_COVER_RISE_PERCENT);
+
   const scanUrl = `${window.location.origin}/scan`;
 
   return (
@@ -87,13 +98,23 @@ export default function GameScreen() {
           </div>
 
           <div className="h-full flex items-center justify-center">
-            <QRCodeSVG
-              value={scanUrl}
-              size={300}
-              bgColor="transparent"
-              fgColor="hsl(175, 85%, 55%)"
-              level="H"
-            />
+            <div className="relative">
+              <QRCodeSVG
+                value={scanUrl}
+                size={300}
+                bgColor="transparent"
+                fgColor="hsl(175, 85%, 55%)"
+                level="H"
+              />
+              <div
+                className="absolute inset-0 pointer-events-none bg-center bg-cover bg-no-repeat"
+                style={{
+                  backgroundImage: `url('${QR_BLOCKER_IMAGE}')`,
+                  transform: `translateY(${coverTranslateY}%)`,
+                  transition: `transform ${QR_COVER_SPEED_MS}ms ease-in-out`,
+                }}
+              />
+            </div>
           </div>
         </section>
       </main>
