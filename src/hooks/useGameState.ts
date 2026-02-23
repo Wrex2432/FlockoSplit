@@ -19,24 +19,21 @@ export function useGameState() {
   const [phase, setPhase] = useState<GamePhase>("counting");
   const [targetNumber, setTargetNumber] = useState(() => Math.floor(Math.random() * 7) + 2);
   const [currentRound, setCurrentRound] = useState<RoundData | null>(null);
-  const [cameraCountdown, setCameraCountdown] = useState<number | null>(null);
   const [processingTime, setProcessingTime] = useState(10);
   const [scans, setScans] = useState<ScanEntry[]>([]);
   const [winner, setWinner] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout>();
-  const countdownRef = useRef<NodeJS.Timeout>();
-  const countdownValueRef = useRef(3);
 
-  const startNewRound = useCallback(async () => {
-    const newTarget = Math.floor(Math.random() * 7) + 2;
-    setTargetNumber(newTarget);
+  const startNewRound = useCallback(async (reshuffleTarget = true) => {
+    if (reshuffleTarget) {
+      const newTarget = Math.floor(Math.random() * 7) + 2;
+      setTargetNumber(newTarget);
+    }
     setPhase("counting");
-    setCameraCountdown(null);
     setProcessingTime(10);
     setScans([]);
     setWinner(null);
     setCurrentRound(null);
-    if (countdownRef.current) clearInterval(countdownRef.current);
   }, []);
 
   const fetchResults = useCallback(async (roundId: string) => {
@@ -59,12 +56,11 @@ export function useGameState() {
       setPhase("results");
     } else {
       await supabase.from("game_rounds").update({ status: "counting" }).eq("id", roundId);
-      await startNewRound();
+      await startNewRound(false);
     }
   }, [startNewRound]);
 
   const proceedToQR = useCallback(async () => {
-    setCameraCountdown(null);
     setPhase("qr_reveal");
 
     // Create round in DB
@@ -98,33 +94,14 @@ export function useGameState() {
     timerRef.current = procInterval as any;
   }, [targetNumber, fetchResults]);
 
-  // Called when camera count >= target — starts the 3-2-1 overlay countdown
+  // Called when camera count >= target — proceed immediately to QR reveal
   const onTargetReached = useCallback(() => {
-    if (cameraCountdown !== null) return; // already counting down
-    countdownValueRef.current = 3;
-    setCameraCountdown(3);
+    if (phase !== "counting") return;
+    proceedToQR();
+  }, [phase, proceedToQR]);
 
-    const interval = setInterval(() => {
-      countdownValueRef.current--;
-      setCameraCountdown(countdownValueRef.current);
-      if (countdownValueRef.current <= 0) {
-        clearInterval(interval);
-        countdownRef.current = undefined;
-        // Countdown finished — proceed to QR reveal
-        proceedToQR();
-      }
-    }, 1000);
-    countdownRef.current = interval as any;
-  }, [cameraCountdown, proceedToQR]);
-
-  // Called when camera count drops below target during countdown
-  const onTargetLost = useCallback(() => {
-    if (countdownRef.current) {
-      clearInterval(countdownRef.current);
-      countdownRef.current = undefined;
-    }
-    setCameraCountdown(null);
-  }, []);
+  // No-op now that countdown hold mechanic is disabled
+  const onTargetLost = useCallback(() => {}, []);
 
   useEffect(() => {
     return () => {
@@ -136,7 +113,7 @@ export function useGameState() {
     phase,
     targetNumber,
     currentRound,
-    cameraCountdown,
+    cameraCountdown: null,
     processingTime,
     scans,
     winner,
