@@ -4,12 +4,29 @@ import { useGameState } from "@/hooks/useGameState";
 import { CameraCounter } from "@/components/game/CameraCounter";
 
 const NO_PEOPLE_BANNER_DELAY_MS = 10_000;
+
 const QR_COVER_SPEED_MS = 900;
 const QR_COVER_RISE_PERCENT = 88;
-const QR_SIZE = 300;
 const QR_COVER_SCALE = 1.45;
 const QR_COVER_OFFSET_X_PX = 0;
 const QR_COVER_OFFSET_Y_PX = 0;
+
+// QR image controls
+const QR_WIDTH_PX = 300;
+const QR_HEIGHT_PX = 300;
+const QR_OFFSET_X_PX = 0;
+const QR_OFFSET_Y_PX = 0;
+
+// Prize popup controls
+const PRIZE_POPUP_1_WIDTH = "92vw";
+const PRIZE_POPUP_1_MAX_HEIGHT = "92vh";
+const PRIZE_POPUP_1_OFFSET_X_PX = 0;
+const PRIZE_POPUP_1_OFFSET_Y_PX = 0;
+
+const PRIZE_POPUP_2_WIDTH = "92vw";
+const PRIZE_POPUP_2_MAX_HEIGHT = "92vh";
+const PRIZE_POPUP_2_OFFSET_X_PX = 0;
+const PRIZE_POPUP_2_OFFSET_Y_PX = 0;
 
 const INTRO_BANNER_IMAGE = "/bg_intro.png";
 const QR_BLOCKER_IMAGE = "/HAND.png";
@@ -98,6 +115,12 @@ export default function GameScreen() {
     });
   }, [targetNumber]);
 
+  const isPopupOne = claimPopupStage === 1;
+  const popupWidth = isPopupOne ? PRIZE_POPUP_1_WIDTH : PRIZE_POPUP_2_WIDTH;
+  const popupMaxHeight = isPopupOne ? PRIZE_POPUP_1_MAX_HEIGHT : PRIZE_POPUP_2_MAX_HEIGHT;
+  const popupOffsetX = isPopupOne ? PRIZE_POPUP_1_OFFSET_X_PX : PRIZE_POPUP_2_OFFSET_X_PX;
+  const popupOffsetY = isPopupOne ? PRIZE_POPUP_1_OFFSET_Y_PX : PRIZE_POPUP_2_OFFSET_Y_PX;
+
   return (
     <div className="play-screen-bg play-screen-game h-dvh w-full overflow-hidden relative">
       <main className="h-full w-full p-6">
@@ -119,19 +142,25 @@ export default function GameScreen() {
 
           <div className="h-full flex items-center justify-center overflow-visible">
             <div className="relative overflow-visible">
-              <img
-                src={activeQrImage}
-                alt="Active QR"
-                width={QR_SIZE}
-                height={QR_SIZE}
-                className="w-auto h-auto max-w-none"
-              />
+              <div
+                style={{
+                  transform: `translate(${QR_OFFSET_X_PX}px, ${QR_OFFSET_Y_PX}px)`,
+                }}
+              >
+                <img
+                  src={activeQrImage}
+                  alt="Active QR"
+                  width={QR_WIDTH_PX}
+                  height={QR_HEIGHT_PX}
+                  className="w-auto h-auto max-w-none"
+                />
+              </div>
 
               <div
                 className="absolute left-1/2 top-1/2 pointer-events-none"
                 style={{
-                  width: `${QR_SIZE * QR_COVER_SCALE}px`,
-                  transform: `translate(calc(-50% + ${QR_COVER_OFFSET_X_PX}px), calc(-50% + ${QR_COVER_OFFSET_Y_PX}px + ${coverTranslateY}%))`,
+                  width: `${QR_WIDTH_PX * QR_COVER_SCALE}px`,
+                  transform: `translate(calc(-50% + ${QR_COVER_OFFSET_X_PX + QR_OFFSET_X_PX}px), calc(-50% + ${QR_COVER_OFFSET_Y_PX + QR_OFFSET_Y_PX}px + ${coverTranslateY}%))`,
                   transition: `transform ${QR_COVER_SPEED_MS}ms ease-in-out`,
                 }}
               >
@@ -176,9 +205,14 @@ export default function GameScreen() {
             className="absolute inset-0 z-50 bg-background/70 backdrop-blur-sm flex items-center justify-center p-6"
           >
             <img
-              src={claimPopupStage === 1 ? CLAIM_POPUP_IMAGE_1 : CLAIM_POPUP_IMAGE_2}
+              src={isPopupOne ? CLAIM_POPUP_IMAGE_1 : CLAIM_POPUP_IMAGE_2}
               alt="Prize claimed popup"
-              className="max-h-[92vh] max-w-[92vw] object-contain"
+              style={{
+                width: popupWidth,
+                maxHeight: popupMaxHeight,
+                transform: `translate(${popupOffsetX}px, ${popupOffsetY}px)`,
+              }}
+              className="object-contain"
             />
           </motion.div>
         )}
