@@ -12,6 +12,7 @@ const INTRO_BANNER_IMAGE = "/host-intro-banner-temp.png";
 const QR_BLOCKER_IMAGE = "/qr-cover-temp.png";
 const CLAIM_POPUP_IMAGE_1 = "/winner-popup-1-temp.png";
 const CLAIM_POPUP_IMAGE_2 = "/winner-popup-2-temp.png";
+const LAYER_TWO_BACKGROUND_IMAGE = "/host-layer-2-bg-temp.png";
 
 export default function GameScreen() {
   const [liveCount, setLiveCount] = useState(0);
@@ -81,7 +82,11 @@ export default function GameScreen() {
   return (
     <div className="play-screen-bg play-screen-game h-dvh w-full overflow-hidden relative">
       <main className="h-full w-full p-6">
-        <section className="h-full grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section className="h-full grid grid-cols-1 lg:grid-cols-2 gap-6 relative rounded-2xl overflow-hidden">
+          <div
+            className="absolute inset-0 -z-10 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url('${LAYER_TWO_BACKGROUND_IMAGE}')` }}
+          />
           <div className="glass-panel p-4 h-full min-h-0">
             <CameraCounter
               targetNumber={targetNumber}
