@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGameState } from "@/hooks/useGameState";
 import { CameraCounter } from "@/components/game/CameraCounter";
-import { QRCodeSVG } from "qrcode.react";
 
 const NO_PEOPLE_BANNER_DELAY_MS = 10_000;
 const QR_COVER_SPEED_MS = 900;
@@ -17,11 +16,21 @@ const QR_BLOCKER_IMAGE = "/HAND.png";
 const CLAIM_POPUP_IMAGE_1 = "/pr1.png";
 const CLAIM_POPUP_IMAGE_2 = "/pr2.png";
 const LAYER_TWO_BACKGROUND_IMAGE = "/bg_cam.png";
+const QR_IMAGE_POOL = [
+  "/qr-variant-1.png",
+  "/qr-variant-2.png",
+  "/qr-variant-3.png",
+  "/qr-variant-4.png",
+  "/qr-variant-5.png",
+  "/qr-variant-6.png",
+  "/qr-variant-7.png",
+] as const;
 
 export default function GameScreen() {
   const [liveCount, setLiveCount] = useState(0);
   const [showIntroBanner, setShowIntroBanner] = useState(true);
   const [claimPopupStage, setClaimPopupStage] = useState<1 | 2 | null>(null);
+  const [activeQrImage, setActiveQrImage] = useState<string>(QR_IMAGE_POOL[0]);
 
   const {
     phase,
@@ -80,7 +89,14 @@ export default function GameScreen() {
   }, [liveCount, targetNumber]);
 
   const coverTranslateY = -(proximity * QR_COVER_RISE_PERCENT);
-  const scanUrl = `${window.location.origin}/scan`;
+
+  useEffect(() => {
+    setActiveQrImage((previousQrImage) => {
+      const available = QR_IMAGE_POOL.filter((image) => image !== previousQrImage);
+      const nextIndex = Math.floor(Math.random() * available.length);
+      return available[nextIndex] ?? QR_IMAGE_POOL[0];
+    });
+  }, [targetNumber]);
 
   return (
     <div className="play-screen-bg play-screen-game h-dvh w-full overflow-hidden relative">
@@ -103,12 +119,12 @@ export default function GameScreen() {
 
           <div className="h-full flex items-center justify-center overflow-visible">
             <div className="relative overflow-visible">
-              <QRCodeSVG
-                value={scanUrl}
-                size={QR_SIZE}
-                bgColor="transparent"
-                fgColor="hsl(175, 85%, 55%)"
-                level="H"
+              <img
+                src={activeQrImage}
+                alt="Active QR"
+                width={QR_SIZE}
+                height={QR_SIZE}
+                className="w-auto h-auto max-w-none"
               />
 
               <div
