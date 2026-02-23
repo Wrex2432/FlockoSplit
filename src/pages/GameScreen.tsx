@@ -8,11 +8,11 @@ const NO_PEOPLE_BANNER_DELAY_MS = 10_000;
 const QR_COVER_SPEED_MS = 900;
 const QR_COVER_RISE_PERCENT = 88;
 
-const INTRO_BANNER_IMAGE = "/INTRO_BANNER_IMAGE.png";
+const INTRO_BANNER_IMAGE = "/host-intro-banner-temp.png";
 const QR_BLOCKER_IMAGE = "/qr-cover-temp.png";
 const CLAIM_POPUP_IMAGE_1 = "/winner-popup-1-temp.png";
 const CLAIM_POPUP_IMAGE_2 = "/winner-popup-2-temp.png";
-const LAYER_TWO_BACKGROUND_IMAGE = "/LAYER_TWO_BACKGROUND_IMAGE.png";
+const LAYER_TWO_BACKGROUND_IMAGE = "/host-layer-2-bg-temp.png";
 
 export default function GameScreen() {
   const [liveCount, setLiveCount] = useState(0);
@@ -81,13 +81,13 @@ export default function GameScreen() {
 
   return (
     <div className="play-screen-bg play-screen-game h-dvh w-full overflow-hidden relative">
-      <main className="h-full w-full">
-        <section className="h-full grid grid-cols-1 lg:grid-cols-2 gap-6 relative overflow-hidden">
+      <main className="h-full w-full p-6">
+        <section className="h-full grid grid-cols-1 lg:grid-cols-2 gap-6 relative rounded-2xl overflow-hidden">
           <div
             className="absolute inset-0 -z-10 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url('${LAYER_TWO_BACKGROUND_IMAGE}')` }}
           />
-          <div className=" p-4 h-full min-h-0">
+          <div className="glass-panel p-4 h-full min-h-0">
             <CameraCounter
               targetNumber={targetNumber}
               onTargetReached={onTargetReached}
@@ -97,7 +97,7 @@ export default function GameScreen() {
             />
           </div>
 
-          <div className=" p-6 h-full flex flex-col items-center justify-center gap-6 relative overflow-hidden">
+          <div className="glass-panel p-6 h-full flex flex-col items-center justify-center gap-6 relative overflow-hidden">
             <p className="text-xl md:text-2xl font-bold text-primary glow-text uppercase tracking-wider text-center">
               Scan to Join
             </p>

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePersonDetection } from "@/hooks/usePersonDetection";
-import { Camera, Users } from "lucide-react";
+import { Camera } from "lucide-react";
 
 interface CameraCounterProps {
   targetNumber: number;
@@ -10,6 +10,8 @@ interface CameraCounterProps {
   cameraCountdown: number | null;
   onCountChange?: (count: number) => void;
 }
+
+const TARGET_NUMBER_BACKGROUND_IMAGE = "/target-number-bg-temp.png";
 
 export function CameraCounter({ targetNumber, onTargetReached, onTargetLost, cameraCountdown, onCountChange }: CameraCounterProps) {
   const { videoRef, canvasRef, count, isLoading, error } = usePersonDetection();
@@ -30,19 +32,17 @@ export function CameraCounter({ targetNumber, onTargetReached, onTargetLost, cam
   }, [count, onCountChange]);
 
   return (
-    <div className="h-full w-full flex flex-col items-center gap-4">
+    <div className="h-full w-full relative">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-3 bg-card/70 border border-border/70 rounded-xl px-5 py-2"
+        className="absolute top-4 left-1/2 -translate-x-1/2 z-30 w-[min(42vw,420px)] h-[min(18vh,140px)] flex items-center justify-center bg-center bg-contain bg-no-repeat pointer-events-none"
+        style={{ backgroundImage: `url('${TARGET_NUMBER_BACKGROUND_IMAGE}')` }}
       >
-        <Users className="w-5 h-5 text-primary" />
-        <span className="text-muted-foreground text-sm md:text-base">Need</span>
-        <span className="counter-display text-3xl text-primary glow-text">{targetNumber}</span>
-        <span className="text-muted-foreground text-sm md:text-base">people in frame</span>
+        <span className="counter-display text-6xl md:text-7xl text-primary glow-text">{targetNumber}</span>
       </motion.div>
 
-      <div className="relative w-full flex-1 min-h-0 rounded-2xl overflow-hidden border-2 border-border glow-box">
+      <div className="relative z-10 w-full h-full min-h-0 rounded-2xl overflow-hidden border-2 border-border glow-box">
         <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 
