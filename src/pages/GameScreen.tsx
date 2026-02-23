@@ -160,7 +160,7 @@ export default function GameScreen() {
                 className="absolute left-1/2 top-1/2 pointer-events-none"
                 style={{
                   width: `${QR_WIDTH_PX * QR_COVER_SCALE}px`,
-                  transform: `translate(calc(-50% + ${QR_COVER_OFFSET_X_PX + QR_OFFSET_X_PX}px), calc(-50% + ${QR_COVER_OFFSET_Y_PX + QR_OFFSET_Y_PX}px + ${coverTranslateY}%))`,
+                  transform: `translate(calc(-50% + ${QR_COVER_OFFSET_X_PX + QR_OFFSET_X_PX}px), calc(-50% + ${QR_COVER_OFFSET_Y_PX}px + ${coverTranslateY}%))`,
                   transition: `transform ${QR_COVER_SPEED_MS}ms ease-in-out`,
                 }}
               >
