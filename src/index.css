@@ -1,0 +1,187 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 6%;
+    --foreground: 180 100% 95%;
+
+    --card: 220 18% 10%;
+    --card-foreground: 180 100% 95%;
+
+    --popover: 220 18% 10%;
+    --popover-foreground: 180 100% 95%;
+
+    --primary: 175 85% 55%;
+    --primary-foreground: 220 20% 6%;
+
+    --secondary: 220 15% 16%;
+    --secondary-foreground: 180 30% 80%;
+
+    --muted: 220 15% 14%;
+    --muted-foreground: 220 10% 50%;
+
+    --accent: 145 75% 55%;
+    --accent-foreground: 220 20% 6%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 175 85% 55%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 220 18% 8%;
+    --sidebar-foreground: 180 30% 80%;
+    --sidebar-primary: 175 85% 55%;
+    --sidebar-primary-foreground: 220 20% 6%;
+    --sidebar-accent: 220 15% 14%;
+    --sidebar-accent-foreground: 180 30% 80%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-ring: 175 85% 55%;
+
+    /* Custom tokens */
+    --glow-primary: 175 85% 55%;
+    --glow-accent: 145 75% 55%;
+    --glow-warn: 45 100% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+}
+
+@layer components {
+  .play-screen-bg {
+    min-height: 100dvh;
+    width: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-image: var(--play-screen-bg);
+  }
+
+  .play-screen-index {
+    --play-screen-bg: url('/play-bg-index.png');
+  }
+
+  .play-screen-game {
+    --play-screen-bg: url('/play-bg-game.png');
+  }
+
+  .play-screen-leaderboard {
+    --play-screen-bg: url('/play-bg-leaderboard.png');
+  }
+
+  .game-stage {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    min-height: calc(100dvh - var(--game-stage-header-offset, 10rem));
+    overflow: hidden;
+  }
+
+  .game-camera-shell {
+    --camera-left: 6%;
+    --camera-top: 8%;
+    --camera-width: min(44vw, 760px);
+    --camera-height: min(50vh, 460px);
+    position: absolute;
+    left: var(--camera-left);
+    top: var(--camera-top);
+    width: var(--camera-width);
+    height: var(--camera-height);
+  }
+
+  .game-side-overlay {
+    --side-overlay-width: min(16vw, 240px);
+    --side-overlay-height: min(45vh, 380px);
+    position: absolute;
+    right: calc(100% - var(--side-overlay-overlap, 2.25rem));
+    top: 50%;
+    width: var(--side-overlay-width);
+    height: var(--side-overlay-height);
+    transform: translateY(-50%);
+    background-image: var(--side-overlay-bg, url('/play-side-overlay.png'));
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    z-index: 30;
+  }
+
+  .game-mid-float {
+    --mid-image-width: min(28vw, 420px);
+    --mid-image-height: min(40vh, 320px);
+    --mid-image-lift: 140px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--mid-image-width);
+    height: var(--mid-image-height);
+    transform: translate(-50%, -50%);
+    background-image: var(--mid-image-bg, url('/play-mid-image.png'));
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    z-index: 15;
+    transition: transform 220ms ease-out;
+  }
+
+  .glow-text {
+    text-shadow: 0 0 20px hsl(var(--glow-primary) / 0.6), 0 0 40px hsl(var(--glow-primary) / 0.3);
+  }
+  .glow-accent {
+    text-shadow: 0 0 20px hsl(var(--glow-accent) / 0.6), 0 0 40px hsl(var(--glow-accent) / 0.3);
+  }
+  .glow-box {
+    box-shadow: 0 0 30px hsl(var(--glow-primary) / 0.2), 0 0 60px hsl(var(--glow-primary) / 0.1);
+  }
+  .glow-box-accent {
+    box-shadow: 0 0 30px hsl(var(--glow-accent) / 0.3), 0 0 60px hsl(var(--glow-accent) / 0.15);
+  }
+  .counter-display {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+  }
+  .glass-panel {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl;
+  }
+}
+
+@layer utilities {
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  @keyframes count-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+  .animate-count-pop {
+    animation: count-pop 0.3s ease-out;
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+  .animate-confetti {
+    animation: confetti-fall 3s ease-in forwards;
+  }
+}
