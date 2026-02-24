@@ -34,6 +34,10 @@ const QR_BLOCKER_IMAGE = "/HAND2.png";
 const CLAIM_POPUP_IMAGE_1 = "/pr1.png";
 const CLAIM_POPUP_IMAGE_2 = "/pr2.png";
 const LAYER_TWO_BACKGROUND_IMAGE = "/bg_cam.png";
+const LAYER_TWO_CORNER_IMAGE = "/layer2_corner.png";
+const LAYER_TWO_CORNER_IMAGE_WIDTH_PX = 280;
+const LAYER_TWO_CORNER_IMAGE_OFFSET_X_PX = 0;
+const LAYER_TWO_CORNER_IMAGE_OFFSET_Y_PX = 0;
 const QR_IMAGE_POOL = [
   "/qr/BURGER.jpg",
   "/qr/CAKE.jpg",
@@ -166,6 +170,18 @@ export default function GameScreen() {
             style={{ backgroundImage: `url('${LAYER_TWO_BACKGROUND_IMAGE}')` }}
           />
 
+          <div className="absolute bottom-0 right-0 z-10 pointer-events-none">
+            <img
+              src={LAYER_TWO_CORNER_IMAGE}
+              alt="Layer two corner decoration"
+              style={{
+                width: `${LAYER_TWO_CORNER_IMAGE_WIDTH_PX}px`,
+                transform: `translate(${LAYER_TWO_CORNER_IMAGE_OFFSET_X_PX}px, ${LAYER_TWO_CORNER_IMAGE_OFFSET_Y_PX}px)`,
+              }}
+              className="h-auto object-contain"
+            />
+          </div>
+
           <div className="p-4 h-full min-h-0">
             <CameraCounter
               targetNumber={targetNumber}
@@ -255,7 +271,7 @@ export default function GameScreen() {
       </AnimatePresence>
 
       {phase === "qr_reveal" && (
-        <div className="absolute bottom-6 right-6 z-40">
+        <div className="absolute top-6 left-6 z-40">
           <motion.div
             animate={{ scale: revealCountdownStarted ? [1, 1.15, 1] : [1, 1.05, 1] }}
             transition={{ duration: pulseDurationSeconds, repeat: Infinity, ease: "easeInOut" }}
