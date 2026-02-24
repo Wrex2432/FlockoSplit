@@ -102,6 +102,7 @@ export default function GameScreen() {
 
   const proximity = useMemo(() => {
     if (!targetNumber) return 0;
+    if (liveCount > targetNumber) return 0;
     return Math.max(0, Math.min(liveCount / targetNumber, 1));
   }, [liveCount, targetNumber]);
 

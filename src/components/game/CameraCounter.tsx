@@ -28,16 +28,16 @@ const CAMERA_WINDOW_Y = "60%";
 
 export function CameraCounter({ targetNumber, onTargetReached, onTargetLost, cameraCountdown, onCountChange }: CameraCounterProps) {
   const { videoRef, canvasRef, count, isLoading, error } = usePersonDetection();
-  const prevAboveTarget = useRef(false);
+  const prevAtTarget = useRef(false);
 
   useEffect(() => {
-    const isAbove = count >= targetNumber;
-    if (isAbove && !prevAboveTarget.current) {
+    const isAtTarget = count === targetNumber;
+    if (isAtTarget && !prevAtTarget.current) {
       onTargetReached();
-    } else if (!isAbove && prevAboveTarget.current) {
+    } else if (!isAtTarget && prevAtTarget.current) {
       onTargetLost();
     }
-    prevAboveTarget.current = isAbove;
+    prevAtTarget.current = isAtTarget;
   }, [count, targetNumber, onTargetReached, onTargetLost]);
 
   useEffect(() => {
