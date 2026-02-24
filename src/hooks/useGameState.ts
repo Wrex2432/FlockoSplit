@@ -22,6 +22,7 @@ export function useGameState() {
   const [currentRound, setCurrentRound] = useState<RoundData | null>(null);
   const [processingTime, setProcessingTime] = useState(10);
   const [qrRevealTimeLeft, setQrRevealTimeLeft] = useState(QR_REVEAL_DURATION_SECONDS);
+  const [revealCountdownStarted, setRevealCountdownStarted] = useState(false);
   const [scans, setScans] = useState<ScanEntry[]>([]);
   const [winner, setWinner] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout>();
@@ -47,6 +48,7 @@ export function useGameState() {
     setPhase("counting");
     setProcessingTime(10);
     setQrRevealTimeLeft(QR_REVEAL_DURATION_SECONDS);
+    setRevealCountdownStarted(false);
     setScans([]);
     setWinner(null);
     setCurrentRound(null);
@@ -80,6 +82,7 @@ export function useGameState() {
     clearRoundResources();
     setPhase("qr_reveal");
     setQrRevealTimeLeft(QR_REVEAL_DURATION_SECONDS);
+    setRevealCountdownStarted(false);
 
     // Create round in DB
     const { data, error } = await supabase
@@ -128,20 +131,27 @@ export function useGameState() {
       scanChannelRef.current = channel;
     }
 
+  }, [targetNumber, fetchResults, clearRoundResources, winner]);
+
+  const startQrRevealCountdown = useCallback(() => {
+    if (phase !== "qr_reveal" || revealCountdownStarted || !currentRound?.id) return;
+
+    setRevealCountdownStarted(true);
     let t = QR_REVEAL_DURATION_SECONDS;
+    const roundId = currentRound.id;
+
     const qrRevealInterval = setInterval(async () => {
       t--;
       setQrRevealTimeLeft(t);
       if (t <= 0) {
         clearRoundResources();
-        if (data) {
-          await supabase.from("game_rounds").update({ status: "counting" }).eq("id", data.id);
-        }
+        await supabase.from("game_rounds").update({ status: "counting" }).eq("id", roundId);
         startNewRound(true);
       }
     }, 1000);
+
     timerRef.current = qrRevealInterval as any;
-  }, [targetNumber, fetchResults, clearRoundResources, startNewRound, winner]);
+  }, [phase, revealCountdownStarted, currentRound, clearRoundResources, startNewRound]);
 
   // Called when camera count >= target — proceed immediately to QR reveal
   const onTargetReached = useCallback(() => {
@@ -165,10 +175,12 @@ export function useGameState() {
     cameraCountdown: null,
     processingTime,
     qrRevealTimeLeft,
+    revealCountdownStarted,
     scans,
     winner,
     onTargetReached,
     onTargetLost,
     startNewRound,
+    startQrRevealCountdown,
   };
 }

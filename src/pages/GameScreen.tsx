@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGameState } from "@/hooks/useGameState";
 import { CameraCounter } from "@/components/game/CameraCounter";
 
 const NO_PEOPLE_BANNER_DELAY_MS = 10_000;
+const TARGET_HOLD_DURATION_MS = 2_000;
 
 const QR_COVER_SPEED_MS = 900;
 const QR_COVER_RISE_PERCENT = 48;
@@ -54,11 +55,14 @@ export default function GameScreen() {
     targetNumber,
     cameraCountdown,
     qrRevealTimeLeft,
+    revealCountdownStarted,
     winner,
     onTargetReached,
     onTargetLost,
     startNewRound,
+    startQrRevealCountdown,
   } = useGameState();
+  const targetHoldTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let bannerTimer: ReturnType<typeof setTimeout> | undefined;
@@ -76,6 +80,35 @@ export default function GameScreen() {
       if (bannerTimer) clearTimeout(bannerTimer);
     };
   }, [liveCount]);
+
+  useEffect(() => {
+    if (phase !== "qr_reveal" || revealCountdownStarted) {
+      if (targetHoldTimerRef.current) {
+        clearTimeout(targetHoldTimerRef.current);
+        targetHoldTimerRef.current = null;
+      }
+      return;
+    }
+
+    if (liveCount === targetNumber && !targetHoldTimerRef.current) {
+      targetHoldTimerRef.current = setTimeout(() => {
+        startQrRevealCountdown();
+        targetHoldTimerRef.current = null;
+      }, TARGET_HOLD_DURATION_MS);
+    }
+
+    if (liveCount !== targetNumber && targetHoldTimerRef.current) {
+      clearTimeout(targetHoldTimerRef.current);
+      targetHoldTimerRef.current = null;
+    }
+
+    return () => {
+      if (targetHoldTimerRef.current && (phase !== "qr_reveal" || liveCount !== targetNumber)) {
+        clearTimeout(targetHoldTimerRef.current);
+        targetHoldTimerRef.current = null;
+      }
+    };
+  }, [phase, liveCount, targetNumber, revealCountdownStarted, startQrRevealCountdown]);
 
   useEffect(() => {
     if (phase !== "results" || !winner) {
@@ -122,6 +155,7 @@ export default function GameScreen() {
   const popupMaxHeight = isPopupOne ? PRIZE_POPUP_1_MAX_HEIGHT : PRIZE_POPUP_2_MAX_HEIGHT;
   const popupOffsetX = isPopupOne ? PRIZE_POPUP_1_OFFSET_X_PX : PRIZE_POPUP_2_OFFSET_X_PX;
   const popupOffsetY = isPopupOne ? PRIZE_POPUP_1_OFFSET_Y_PX : PRIZE_POPUP_2_OFFSET_Y_PX;
+  const pulseDurationSeconds = qrRevealTimeLeft <= 5 ? 0.32 : qrRevealTimeLeft <= 10 ? 0.5 : 0.8;
 
   return (
     <div className="play-screen-bg play-screen-game h-dvh w-full overflow-hidden relative">
@@ -220,11 +254,15 @@ export default function GameScreen() {
         )}
       </AnimatePresence>
 
-      {phase === "qr_reveal" && liveCount === targetNumber && (
+      {phase === "qr_reveal" && (
         <div className="absolute bottom-6 right-6 z-40">
-          <div className="h-20 w-20 rounded-full border-2 border-primary/80 bg-background/55 backdrop-blur-sm flex items-center justify-center shadow-[0_0_20px_hsl(var(--primary)/0.25)]">
+          <motion.div
+            animate={{ scale: revealCountdownStarted ? [1, 1.15, 1] : [1, 1.05, 1] }}
+            transition={{ duration: pulseDurationSeconds, repeat: Infinity, ease: "easeInOut" }}
+            className="h-20 w-20 rounded-full border-2 border-primary/80 bg-background/55 backdrop-blur-sm flex items-center justify-center shadow-[0_0_20px_hsl(var(--primary)/0.25)]"
+          >
             <span className="counter-display text-3xl leading-none text-primary glow-text">{qrRevealTimeLeft}</span>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>
