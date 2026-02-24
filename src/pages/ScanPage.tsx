@@ -15,6 +15,7 @@ const PHASE_BACKGROUNDS: Record<Phase, string> = {
 const NAME_SUBMIT_BUTTON_IMAGE = "/btn-name-submit-temp.png";
 const ANSWER_SUBMIT_BUTTON_IMAGE = "/btn-answer-submit-temp.png";
 const CLAIM_BUTTON_IMAGE = "/btn-claim-temp.png";
+const CLAIM_BANNER_IMAGE = "/scan-claim-banner-temp.png";
 
 const SUCCESS_IMAGE = "/scan-success-temp.png";
 const ERROR_IMAGE = "/scan-fail-temp.png";
@@ -93,8 +94,10 @@ export default function ScanPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-sm"
+          className="w-full max-w-sm space-y-4"
         >
+          <img src={CLAIM_BANNER_IMAGE} alt="Claim banner" className="w-full h-auto object-contain" />
+
           <button
             type="button"
             onClick={registerScan}
