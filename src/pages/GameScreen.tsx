@@ -53,6 +53,7 @@ export default function GameScreen() {
     phase,
     targetNumber,
     cameraCountdown,
+    qrRevealTimeLeft,
     winner,
     onTargetReached,
     onTargetLost,
@@ -218,6 +219,13 @@ export default function GameScreen() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {phase === "qr_reveal" && (
+        <div className="absolute bottom-6 right-6 z-40 glass-panel px-4 py-2">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Reveal Timer</p>
+          <p className="counter-display text-3xl text-primary glow-text text-right">{qrRevealTimeLeft}s</p>
+        </div>
+      )}
     </div>
   );
 }
