@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type GamePhase = "counting" | "qr_reveal" | "processing" | "results";
+const QR_REVEAL_DURATION_SECONDS = 30;
 
 interface RoundData {
   id: string;
@@ -20,21 +21,38 @@ export function useGameState() {
   const [targetNumber, setTargetNumber] = useState(() => Math.floor(Math.random() * 7) + 2);
   const [currentRound, setCurrentRound] = useState<RoundData | null>(null);
   const [processingTime, setProcessingTime] = useState(10);
+  const [qrRevealTimeLeft, setQrRevealTimeLeft] = useState(QR_REVEAL_DURATION_SECONDS);
+  const [revealCountdownStarted, setRevealCountdownStarted] = useState(false);
   const [scans, setScans] = useState<ScanEntry[]>([]);
   const [winner, setWinner] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout>();
+  const scanChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
+  const clearRoundResources = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = undefined;
+    }
+    if (scanChannelRef.current) {
+      supabase.removeChannel(scanChannelRef.current);
+      scanChannelRef.current = null;
+    }
+  }, []);
 
   const startNewRound = useCallback(async (reshuffleTarget = true) => {
+    clearRoundResources();
     if (reshuffleTarget) {
       const newTarget = Math.floor(Math.random() * 7) + 2;
       setTargetNumber(newTarget);
     }
     setPhase("counting");
     setProcessingTime(10);
+    setQrRevealTimeLeft(QR_REVEAL_DURATION_SECONDS);
+    setRevealCountdownStarted(false);
     setScans([]);
     setWinner(null);
     setCurrentRound(null);
-  }, []);
+  }, [clearRoundResources]);
 
   const fetchResults = useCallback(async (roundId: string) => {
     const { data } = await supabase
@@ -61,7 +79,10 @@ export function useGameState() {
   }, [startNewRound]);
 
   const proceedToQR = useCallback(async () => {
+    clearRoundResources();
     setPhase("qr_reveal");
+    setQrRevealTimeLeft(QR_REVEAL_DURATION_SECONDS);
+    setRevealCountdownStarted(false);
 
     // Create round in DB
     const { data, error } = await supabase
@@ -78,21 +99,59 @@ export function useGameState() {
       });
     }
 
-    // Start 10s processing timer
-    let t = 10;
-    const procInterval = setInterval(() => {
+    if (data) {
+      const channel = supabase
+        .channel(`round-scans-${data.id}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "scans", filter: `round_id=eq.${data.id}` },
+          async () => {
+            const { data: firstScan } = await supabase
+              .from("scans")
+              .select("player_name")
+              .eq("round_id", data.id)
+              .order("scanned_at", { ascending: true })
+              .limit(1)
+              .maybeSingle();
+
+            if (!firstScan?.player_name || winner) return;
+
+            clearRoundResources();
+            setWinner(firstScan.player_name);
+            await supabase
+              .from("game_rounds")
+              .update({ status: "results", winner_name: firstScan.player_name })
+              .eq("id", data.id);
+            setPhase("results");
+            fetchResults(data.id);
+          },
+        )
+        .subscribe();
+
+      scanChannelRef.current = channel;
+    }
+
+  }, [targetNumber, fetchResults, clearRoundResources, winner]);
+
+  const startQrRevealCountdown = useCallback(() => {
+    if (phase !== "qr_reveal" || revealCountdownStarted || !currentRound?.id) return;
+
+    setRevealCountdownStarted(true);
+    let t = QR_REVEAL_DURATION_SECONDS;
+    const roundId = currentRound.id;
+
+    const qrRevealInterval = setInterval(async () => {
       t--;
-      setProcessingTime(t);
+      setQrRevealTimeLeft(t);
       if (t <= 0) {
-        clearInterval(procInterval);
-        setPhase("processing");
-        if (data) {
-          fetchResults(data.id);
-        }
+        clearRoundResources();
+        await supabase.from("game_rounds").update({ status: "counting" }).eq("id", roundId);
+        startNewRound(true);
       }
     }, 1000);
-    timerRef.current = procInterval as any;
-  }, [targetNumber, fetchResults]);
+
+    timerRef.current = qrRevealInterval as any;
+  }, [phase, revealCountdownStarted, currentRound, clearRoundResources, startNewRound]);
 
   // Called when camera count >= target — proceed immediately to QR reveal
   const onTargetReached = useCallback(() => {
@@ -105,9 +164,9 @@ export function useGameState() {
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      clearRoundResources();
     };
-  }, []);
+  }, [clearRoundResources]);
 
   return {
     phase,
@@ -115,10 +174,13 @@ export function useGameState() {
     currentRound,
     cameraCountdown: null,
     processingTime,
+    qrRevealTimeLeft,
+    revealCountdownStarted,
     scans,
     winner,
     onTargetReached,
     onTargetLost,
     startNewRound,
+    startQrRevealCountdown,
   };
 }
