@@ -1,16 +1,75 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { Zap, CheckCircle, AlertCircle, Bug } from "lucide-react";
 
 type Phase = "name" | "question" | "submitting" | "success" | "error";
+
+type ElementPosition = {
+  width: string;
+  height?: string;
+  x: string;
+  y: string;
+};
+
+const PHASE_BACKGROUNDS: Record<Phase, string> = {
+  name: "/mobi_bg.png",
+  question: "/mobi_bg.png",
+  submitting: "/mobi_bg.png",
+  success: "/mobi_bg.png",
+  error: "/mobi_bg.png",
+};
+
+const NAME_SUBMIT_BUTTON_IMAGE = "/mob_butt.png";
+const ANSWER_SUBMIT_BUTTON_IMAGE = "/mob_butt.png";
+const CLAIM_BUTTON_IMAGE = "/mob_butt.png";
+const CLAIM_BANNER_IMAGE = "/claim_banner.png";
+
+const SUCCESS_IMAGE = "/mob1.png";
+const ERROR_IMAGE = "/mob2.png";
+
+const NAME_INPUT_POSITION: ElementPosition = { width: "min(86vw, 360px)", x: "50%", y: "52%" };
+const NAME_BUTTON_POSITION: ElementPosition = { width: "min(70vw, 290px)", x: "50%", y: "66%" };
+
+const QUESTION_INPUT_POSITION: ElementPosition = { width: "min(86vw, 360px)", x: "50%", y: "56%" };
+const QUESTION_BUTTON_POSITION: ElementPosition = { width: "min(70vw, 290px)", x: "50%", y: "70%" };
+
+const CLAIM_BANNER_POSITION: ElementPosition = { width: "min(86vw, 360px)", x: "50%", y: "41%" };
+const CLAIM_BUTTON_POSITION: ElementPosition = { width: "min(70vw, 290px)", x: "50%", y: "64%" };
+
+const RESULT_SUCCESS_POSITION: ElementPosition = {
+  width: "min(90vw, 520px)",
+  x: "50%",
+  y: "50%",
+};
+const RESULT_ERROR_POSITION: ElementPosition = {
+  width: "min(90vw, 520px)",
+  x: "50%",
+  y: "50%",
+};
+
+const QUESTION_TEXT_POSITION: ElementPosition = { width: "min(90vw, 460px)", x: "50%", y: "46%" };
+const WRONG_ANSWER_POSITION: ElementPosition = { width: "min(86vw, 360px)", x: "50%", y: "63%" };
+
+const inputClassName =
+  "w-full px-4 py-3 bg-transparent text-white placeholder:text-white/75 rounded-2xl border-[4px] border-white focus:outline-none focus:ring-0 text-center text-lg";
+
+function anchoredStyle({ width, height, x, y }: ElementPosition) {
+  return {
+    position: "absolute" as const,
+    width,
+    height,
+    left: x,
+    top: y,
+    transform: "translate(-50%, -50%)",
+  };
+}
 
 export default function ScanPage() {
   const [name, setName] = useState("");
   const [answer, setAnswer] = useState("");
   const [phase, setPhase] = useState<Phase>("name");
-  const [errorMsg, setErrorMsg] = useState("");
   const [wrongAnswer, setWrongAnswer] = useState(false);
+  const [isClaiming, setIsClaiming] = useState(false);
 
   const handleNameSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,18 +78,19 @@ export default function ScanPage() {
     setPhase("question");
   };
 
-  const handleAnswerSubmit = async (e: React.FormEvent) => {
+  const handleAnswerSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (answer.trim().toLowerCase() !== "tachanko") {
       setWrongAnswer(true);
       return;
     }
     setWrongAnswer(false);
-    await registerScan();
+    setPhase("submitting");
   };
 
   const registerScan = async () => {
-    setPhase("submitting");
+    if (isClaiming) return;
+    setIsClaiming(true);
 
     const { data: round, error: roundError } = await supabase
       .from("game_rounds")
@@ -41,8 +101,8 @@ export default function ScanPage() {
       .maybeSingle();
 
     if (roundError || !round) {
+      setIsClaiming(false);
       setPhase("error");
-      setErrorMsg("No active round right now. Wait for the next one!");
       return;
     }
 
@@ -50,124 +110,89 @@ export default function ScanPage() {
       .from("scans")
       .insert({ round_id: round.id, player_name: name.trim() });
 
+    setIsClaiming(false);
     if (scanError) {
       setPhase("error");
-      setErrorMsg("Failed to register your scan. Try again!");
       return;
     }
 
     setPhase("success");
   };
 
-  const handleDevSkip = async () => {
-    setName("DevPlayer");
-    await registerScan();
-  };
-
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="glass-panel p-8 w-full max-w-sm text-center"
-      >
-        {phase === "success" ? (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring" }}
-            className="flex flex-col items-center gap-4"
+    <div
+      className="min-h-[100dvh] w-full bg-center bg-cover bg-no-repeat relative overflow-hidden"
+      style={{ backgroundImage: `url('${PHASE_BACKGROUNDS[phase]}')` }}
+    >
+      {phase === "success" ? (
+        <img src={SUCCESS_IMAGE} alt="Scan success" className="h-auto object-contain" style={anchoredStyle(RESULT_SUCCESS_POSITION)} />
+      ) : phase === "error" ? (
+        <img src={ERROR_IMAGE} alt="Scan failed" className="h-auto object-contain" style={anchoredStyle(RESULT_ERROR_POSITION)} />
+      ) : phase === "submitting" ? (
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+          <img
+            src={CLAIM_BANNER_IMAGE}
+            alt="Claim banner"
+            className="h-auto object-contain"
+            style={anchoredStyle(CLAIM_BANNER_POSITION)}
+          />
+
+          <button
+            type="button"
+            onClick={registerScan}
+            disabled={isClaiming}
+            style={anchoredStyle(CLAIM_BUTTON_POSITION)}
+            className="disabled:opacity-40"
           >
-            <CheckCircle className="w-16 h-16 text-accent" />
-            <h2 className="text-2xl font-bold text-accent glow-accent">You're in!</h2>
-            <p className="text-muted-foreground">
-              Wait for the results on the big screen!
+            <img src={CLAIM_BUTTON_IMAGE} alt="Claim" className="w-full h-auto object-contain" />
+          </button>
+        </motion.div>
+      ) : phase === "question" ? (
+        <motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} onSubmit={handleAnswerSubmit}>
+          <p className="text-white text-center text-xl font-semibold" style={anchoredStyle(QUESTION_TEXT_POSITION)}>
+            Full surname ni Luke?
+          </p>
+
+          <input
+            type="text"
+            value={answer}
+            onChange={(e) => {
+              setAnswer(e.target.value);
+              setWrongAnswer(false);
+            }}
+            placeholder="Your answer"
+            className={inputClassName}
+            style={anchoredStyle(QUESTION_INPUT_POSITION)}
+            autoFocus
+          />
+
+          {wrongAnswer && (
+            <p className="text-red-300 text-sm font-medium text-center" style={anchoredStyle(WRONG_ANSWER_POSITION)}>
+              Wrong answer, try again!
             </p>
-          </motion.div>
-        ) : phase === "error" ? (
-          <div className="flex flex-col items-center gap-4">
-            <AlertCircle className="w-16 h-16 text-destructive" />
-            <h2 className="text-xl font-bold text-destructive">{errorMsg}</h2>
-            <button
-              onClick={() => setPhase("name")}
-              className="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg"
-            >
-              Try Again
-            </button>
-          </div>
-        ) : phase === "question" ? (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-          >
-            <Zap className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-primary glow-text mb-2">
-              Anong last name ni Luke?
-            </h2>
-            <p className="text-muted-foreground mb-6 text-sm">Answer to continue, {name}!</p>
+          )}
 
-            <form onSubmit={handleAnswerSubmit} className="space-y-4">
-              <input
-                type="text"
-                value={answer}
-                onChange={(e) => { setAnswer(e.target.value); setWrongAnswer(false); }}
-                placeholder="Your answer"
-                className="w-full px-4 py-3 bg-secondary text-foreground rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary text-center text-lg"
-                autoFocus
-              />
-              {wrongAnswer && (
-                <p className="text-destructive text-sm font-medium">Wrong answer, try again!</p>
-              )}
-              <button
-                type="submit"
-                disabled={!answer.trim()}
-                className="w-full px-6 py-3 bg-primary text-primary-foreground font-bold rounded-xl disabled:opacity-40 hover:opacity-90 transition-opacity"
-              >
-                Submit ✅
-              </button>
-            </form>
-          </motion.div>
-        ) : phase === "submitting" ? (
-          <div className="flex flex-col items-center gap-4">
-            <Zap className="w-12 h-12 text-primary animate-pulse" />
-            <p className="text-muted-foreground">Registering...</p>
-          </div>
-        ) : (
-          <>
-            <Zap className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-primary glow-text mb-2">QR Race!</h2>
-            <p className="text-muted-foreground mb-6">Enter your name to join</p>
+          <button type="submit" disabled={!answer.trim()} style={anchoredStyle(QUESTION_BUTTON_POSITION)} className="disabled:opacity-40">
+            <img src={ANSWER_SUBMIT_BUTTON_IMAGE} alt="Submit answer" className="w-full h-auto object-contain" />
+          </button>
+        </motion.form>
+      ) : (
+        <motion.form initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} onSubmit={handleNameSubmit}>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Your name"
+            maxLength={50}
+            className={inputClassName}
+            style={anchoredStyle(NAME_INPUT_POSITION)}
+            autoFocus
+          />
 
-            <form onSubmit={handleNameSubmit} className="space-y-4">
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
-                maxLength={50}
-                className="w-full px-4 py-3 bg-secondary text-foreground rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary text-center text-lg"
-                autoFocus
-              />
-              <button
-                type="submit"
-                disabled={!name.trim()}
-                className="w-full px-6 py-3 bg-primary text-primary-foreground font-bold rounded-xl disabled:opacity-40 hover:opacity-90 transition-opacity"
-              >
-                GO! ⚡
-              </button>
-            </form>
-          </>
-        )}
-      </motion.div>
-
-      {import.meta.env.DEV && (
-        <button
-          onClick={handleDevSkip}
-          className="fixed bottom-4 right-4 p-3 bg-secondary/80 text-secondary-foreground rounded-full opacity-50 hover:opacity-100 transition-opacity"
-          title="DEV: Skip to scan"
-        >
-          <Bug className="w-5 h-5" />
-        </button>
+          <button type="submit" disabled={!name.trim()} style={anchoredStyle(NAME_BUTTON_POSITION)} className="disabled:opacity-40">
+            <img src={NAME_SUBMIT_BUTTON_IMAGE} alt="Submit name" className="w-full h-auto object-contain" />
+          </button>
+        </motion.form>
       )}
     </div>
   );
