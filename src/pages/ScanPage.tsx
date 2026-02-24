@@ -114,6 +114,8 @@ export default function ScanPage() {
           onSubmit={handleAnswerSubmit}
           className="w-full max-w-sm space-y-4"
         >
+          <p className="text-white text-center text-xl font-semibold">Full surname ni Luke?</p>
+
           <input
             type="text"
             value={answer}
