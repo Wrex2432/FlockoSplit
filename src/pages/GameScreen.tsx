@@ -6,16 +6,16 @@ import { CameraCounter } from "@/components/game/CameraCounter";
 const NO_PEOPLE_BANNER_DELAY_MS = 10_000;
 
 const QR_COVER_SPEED_MS = 900;
-const QR_COVER_RISE_PERCENT = 88;
-const QR_COVER_SCALE = 1.45;
-const QR_COVER_OFFSET_X_PX = 0;
-const QR_COVER_OFFSET_Y_PX = 0;
+const QR_COVER_RISE_PERCENT = 48;
+const QR_COVER_SCALE = 2.47;
+const QR_COVER_OFFSET_X_PX = 67;
+const QR_COVER_OFFSET_Y_PX = -62;
 
 // QR image controls
-const QR_WIDTH_PX = 300;
-const QR_HEIGHT_PX = 300;
+const QR_WIDTH_PX = 280;
+const QR_HEIGHT_PX = 280;
 const QR_OFFSET_X_PX = 0;
-const QR_OFFSET_Y_PX = 0;
+const QR_OFFSET_Y_PX = 100;
 
 // Prize popup controls
 const PRIZE_POPUP_1_WIDTH = "92vw";
@@ -34,13 +34,13 @@ const CLAIM_POPUP_IMAGE_1 = "/pr1.png";
 const CLAIM_POPUP_IMAGE_2 = "/pr2.png";
 const LAYER_TWO_BACKGROUND_IMAGE = "/bg_cam.png";
 const QR_IMAGE_POOL = [
-  "/qr-variant-1.png",
-  "/qr-variant-2.png",
-  "/qr-variant-3.png",
-  "/qr-variant-4.png",
-  "/qr-variant-5.png",
-  "/qr-variant-6.png",
-  "/qr-variant-7.png",
+  "/qr/BURGER.jpg",
+  "/qr/CAKE.jpg",
+  "/qr/CHICKEN.jpg",
+  "/qr/PASTA.jpg",
+  "/qr/PIZZA.jpg",
+  "/qr/SALAD.jpg",
+  "/qr/SANDWICH.jpg",
 ] as const;
 
 export default function GameScreen() {
@@ -123,14 +123,14 @@ export default function GameScreen() {
 
   return (
     <div className="play-screen-bg play-screen-game h-dvh w-full overflow-hidden relative">
-      <main className="h-full w-full p-6">
-        <section className="h-full grid grid-cols-1 lg:grid-cols-2 gap-6 relative rounded-2xl overflow-hidden">
+      <main className="h-full w-full">
+        <section className="h-full grid grid-cols-1 lg:grid-cols-2 gap-6 relative overflow-hidden">
           <div
             className="absolute inset-0 -z-10 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url('${LAYER_TWO_BACKGROUND_IMAGE}')` }}
           />
 
-          <div className="glass-panel p-4 h-full min-h-0">
+          <div className="p-4 h-full min-h-0">
             <CameraCounter
               targetNumber={targetNumber}
               onTargetReached={onTargetReached}
@@ -152,7 +152,7 @@ export default function GameScreen() {
                   alt="Active QR"
                   width={QR_WIDTH_PX}
                   height={QR_HEIGHT_PX}
-                  className="w-auto h-auto max-w-none"
+                  className=""
                 />
               </div>
 

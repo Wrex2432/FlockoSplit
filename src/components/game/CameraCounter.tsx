@@ -11,19 +11,20 @@ interface CameraCounterProps {
   onCountChange?: (count: number) => void;
 }
 
-const TARGET_NUMBER_BACKGROUND_IMAGE = "/target-number-bg-temp.png";
+const TARGET_NUMBER_BACKGROUND_IMAGE = "/bg_num.png";
 
 // Target badge controls
-const TARGET_BADGE_WIDTH = "min(42vw, 420px)";
-const TARGET_BADGE_HEIGHT = "min(18vh, 140px)";
-const TARGET_BADGE_X = "50%";
-const TARGET_BADGE_Y = "4%";
+const TARGET_BADGE_WIDTH = "min(93vw, 930px)";
+const TARGET_BADGE_HEIGHT = "min(40vh, 310px)";
+const TARGET_BADGE_X = "2%";
+const TARGET_BADGE_Y = "10%";
 
 // Camera window controls
 const CAMERA_WINDOW_WIDTH = "90%";
-const CAMERA_WINDOW_HEIGHT = "86%";
-const CAMERA_WINDOW_X = "50%";
-const CAMERA_WINDOW_Y = "56%";
+const CAMERA_WINDOW_HEIGHT = "56%";
+const CAMERA_WINDOW_X = "58%";
+const CAMERA_WINDOW_Y = "60%";
+
 
 export function CameraCounter({ targetNumber, onTargetReached, onTargetLost, cameraCountdown, onCountChange }: CameraCounterProps) {
   const { videoRef, canvasRef, count, isLoading, error } = usePersonDetection();
@@ -58,7 +59,8 @@ export function CameraCounter({ targetNumber, onTargetReached, onTargetLost, cam
           backgroundImage: `url('${TARGET_NUMBER_BACKGROUND_IMAGE}')`,
         }}
       >
-        <span className="counter-display text-6xl md:text-7xl text-primary glow-text">{targetNumber}</span>
+        
+        <span className="counter-display pt-12 text-8xl md:text-9xl text-primary glow-text">{targetNumber}</span>
       </motion.div>
 
       <div
