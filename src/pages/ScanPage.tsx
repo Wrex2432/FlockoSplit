@@ -33,18 +33,19 @@ const NAME_BUTTON_POSITION: ElementPosition = { width: "min(70vw, 290px)", x: "5
 const QUESTION_INPUT_POSITION: ElementPosition = { width: "min(86vw, 360px)", x: "50%", y: "56%" };
 const QUESTION_BUTTON_POSITION: ElementPosition = { width: "min(70vw, 290px)", x: "50%", y: "70%" };
 
-const CLAIM_BANNER_POSITION: ElementPosition = { width: "min(86vw, 360px)", x: "50%", y: "41%" };
-const CLAIM_BUTTON_POSITION: ElementPosition = { width: "min(70vw, 290px)", x: "50%", y: "64%" };
+const CLAIM_BANNER_POSITION: ElementPosition = { width: "min(86vw, 360px)", x: "50%", y: "52%" };
+const CLAIM_BUTTON_POSITION: ElementPosition = { width: "min(70vw, 290px)", x: "50%", y: "75s%" };
 
 const RESULT_SUCCESS_POSITION: ElementPosition = {
-  width: "min(90vw, 520px)",
+  width: "min(79vw, 458px)",
   x: "50%",
-  y: "50%",
+  y: "56%",
 };
+
 const RESULT_ERROR_POSITION: ElementPosition = {
-  width: "min(90vw, 520px)",
+  width: "min(79vw, 458px)",
   x: "50%",
-  y: "50%",
+  y: "56%",
 };
 
 const QUESTION_TEXT_POSITION: ElementPosition = { width: "min(90vw, 460px)", x: "50%", y: "46%" };

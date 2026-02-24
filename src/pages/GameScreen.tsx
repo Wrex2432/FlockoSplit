@@ -7,9 +7,9 @@ const NO_PEOPLE_BANNER_DELAY_MS = 10_000;
 
 const QR_COVER_SPEED_MS = 900;
 const QR_COVER_RISE_PERCENT = 48;
-const QR_COVER_SCALE = 2.47;
-const QR_COVER_OFFSET_X_PX = 67;
-const QR_COVER_OFFSET_Y_PX = -62;
+const QR_COVER_SCALE = 4.27;
+const QR_COVER_OFFSET_X_PX = 277;
+const QR_COVER_OFFSET_Y_PX = -109;
 
 // QR image controls
 const QR_WIDTH_PX = 280;
@@ -29,7 +29,7 @@ const PRIZE_POPUP_2_OFFSET_X_PX = 0;
 const PRIZE_POPUP_2_OFFSET_Y_PX = 0;
 
 const INTRO_BANNER_IMAGE = "/bg_intro.png";
-const QR_BLOCKER_IMAGE = "/HAND.png";
+const QR_BLOCKER_IMAGE = "/HAND2.png";
 const CLAIM_POPUP_IMAGE_1 = "/pr1.png";
 const CLAIM_POPUP_IMAGE_2 = "/pr2.png";
 const LAYER_TWO_BACKGROUND_IMAGE = "/bg_cam.png";
