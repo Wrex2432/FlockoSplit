@@ -34,7 +34,7 @@ const QUESTION_INPUT_POSITION: ElementPosition = { width: "min(86vw, 360px)", x:
 const QUESTION_BUTTON_POSITION: ElementPosition = { width: "min(70vw, 290px)", x: "50%", y: "70%" };
 
 const CLAIM_BANNER_POSITION: ElementPosition = { width: "min(86vw, 360px)", x: "50%", y: "52%" };
-const CLAIM_BUTTON_POSITION: ElementPosition = { width: "min(70vw, 290px)", x: "50%", y: "75s%" };
+const CLAIM_BUTTON_POSITION: ElementPosition = { width: "min(70vw, 290px)", x: "50%", y: "75%" };
 
 const RESULT_SUCCESS_POSITION: ElementPosition = {
   width: "min(79vw, 458px)",
@@ -96,7 +96,7 @@ export default function ScanPage() {
     const { data: round, error: roundError } = await supabase
       .from("game_rounds")
       .select("id, status")
-      .in("status", ["countdown", "qr_reveal"])
+      .in("status", ["qr_reveal", "processing"])
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -107,12 +107,29 @@ export default function ScanPage() {
       return;
     }
 
-    const { error: scanError } = await supabase
+    const { data: insertedScan, error: scanError } = await supabase
       .from("scans")
-      .insert({ round_id: round.id, player_name: name.trim() });
+      .insert({ round_id: round.id, player_name: name.trim() })
+      .select("id")
+      .single();
+
+    if (scanError || !insertedScan) {
+      setIsClaiming(false);
+      setPhase("error");
+      return;
+    }
+
+    const { data: firstScan } = await supabase
+      .from("scans")
+      .select("id")
+      .eq("round_id", round.id)
+      .order("scanned_at", { ascending: true })
+      .order("id", { ascending: true })
+      .limit(1)
+      .maybeSingle();
 
     setIsClaiming(false);
-    if (scanError) {
+    if (!firstScan || firstScan.id !== insertedScan.id) {
       setPhase("error");
       return;
     }
